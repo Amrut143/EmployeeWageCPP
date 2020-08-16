@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
+#include <fstream>
 using namespace std;
 
 int main() {
@@ -18,7 +19,7 @@ int main() {
 	cout << "Welcome to employee wage computation" << endl;
 
 	srand(time(0));
-	while(totalEmpHrs <= MAX_HOUR_IN_MONTH && totalWorkingDays <= NUM_OF_WORKING_DAYS) {
+	while(totalEmpHrs <= MAX_HOUR_IN_MONTH && totalWorkingDays < NUM_OF_WORKING_DAYS) {
 			totalWorkingDays++;
 			int empCheck = rand() % 3;
 
@@ -32,9 +33,26 @@ int main() {
 			default:
 				empHrs = 0;
 		}
+		empWage = empHrs * EMP_RATE_PER_HOUR;
 		totalEmpHrs += empHrs;
+
+		fstream fileStream;
+		fileStream.open("EmpWage.txt", ios::out | ios::app);
+
+		if(fileStream.is_open()) {
+			fileStream << "Day: " << totalWorkingDays << "--->" << empWage << endl;
+			fileStream.close();
+		}
 	}
 	monthlyWage = totalEmpHrs * EMP_RATE_PER_HOUR;
+
+	fstream fileStream;
+	fileStream.open("EmpWage.txt", ios::out | ios::app);
+
+	if(fileStream.is_open()) {
+		fileStream << "Employee Monthly Wage Is: " << monthlyWage << endl;
+		fileStream.close();
+	}
 	cout << "Employee Monthly Wage Is: " << monthlyWage << endl;
 
 	return 0;

@@ -6,9 +6,24 @@
 #include <vector>
 using namespace std;
 
-vector<vector<int> > totalWage;
+struct CompanyEmpWage {
 
-void saveWageIntoFile(vector<int> wages, int empId, int numOfMonths) {
+	string companyName;
+	int numOfWorkingDays;
+	int maxHrsInMonth;
+	int empRatePerHrs;
+
+public:
+		void setCompanyDetails(string companyName, int numOfWorkingDays, int maxHrsInMonth, int empRatePerHrs) {
+
+				this -> companyName = companyName;
+				this -> numOfWorkingDays = numOfWorkingDays;
+				this -> maxHrsInMonth = maxHrsInMonth;
+				this -> empRatePerHrs = empRatePerHrs;
+		}
+};
+
+void saveWageIntoFile(vector<int> wages, int empId, int numOfMonths, string companyName) {
 
 	fstream fileStream;
 	fileStream.open("EmpWage.csv", ios::out | ios::app);
@@ -18,14 +33,14 @@ void saveWageIntoFile(vector<int> wages, int empId, int numOfMonths) {
 		{
 			if(fileStream.tellp() == 0)
 			{
-				fileStream << "Employee";
+				fileStream << "Company, Employee";
 				for(int month = 0; month < 12; month++) {
 					fileStream << ", Month " << (month + 1);
 				}
 			}
 
 			fileStream.seekg(0, ios::beg);
-			fileStream << "\n" << "Employee " << (empId + 1);
+			fileStream << "\n" << companyName << ", Employee " << (empId + 1);
 			for(int month = 0; month < numOfMonths; month++) {
 				fileStream << "," << wages[month];
 			}
@@ -33,10 +48,10 @@ void saveWageIntoFile(vector<int> wages, int empId, int numOfMonths) {
 		fileStream.close();
 }
 
-int getEmpWorkingHour() {
+int getEmpWorkingHour(struct CompanyEmpWage companyEmpWage) {
 
-	const int NUM_OF_WORKING_DAYS = 20;
-	const int MAX_HOUR_IN_MONTH = 100;
+	const int NUM_OF_WORKING_DAYS = companyEmpWage.numOfWorkingDays;
+	const int MAX_HOUR_IN_MONTH = companyEmpWage.maxHrsInMonth;
 	const int PART_TIME = 1;
 	const int FULL_TIME = 2;
 
@@ -66,9 +81,9 @@ int getEmpWorkingHour() {
 	return totalEmpHrs;
 }
 
-void computeEmpWage(int numOfEmp, int totalMonths) {
+void computeEmpWage(struct CompanyEmpWage companyEmpWage, int numOfEmp, int totalMonths) {
 
-	const int EMP_RATE_PER_HOUR = 20;
+	const int EMP_RATE_PER_HOUR = companyEmpWage.empRatePerHrs;
 
 	for(int i = 0; i < numOfEmp; i++) {
 
@@ -76,17 +91,22 @@ void computeEmpWage(int numOfEmp, int totalMonths) {
 		for(int j = 0; j < totalMonths; j++) {
 
 			sleep(2);
-			int empWage = getEmpWorkingHour() * EMP_RATE_PER_HOUR;
+			int empWage = getEmpWorkingHour(companyEmpWage) * EMP_RATE_PER_HOUR;
 			monthlyWage.push_back(empWage);
 			cout << "Monthly Wage For Employee:" << (j + 1) << "Is: " << empWage << endl;
 		}
-		saveWageIntoFile(monthlyWage, i, totalMonths);
+		saveWageIntoFile(monthlyWage, i, totalMonths, companyEmpWage.companyName);
 	}
 }
 
 int main() {
 
-	computeEmpWage(3, 3);
+	struct CompanyEmpWage companyEmpWage;
+	companyEmpWage.setCompanyDetails("Dmart", 20, 100, 20);
+	computeEmpWage(companyEmpWage, 3, 3);
+	companyEmpWage.setCompanyDetails("Relaince", 25, 105, 40);
+	computeEmpWage(companyEmpWage, 2, 2);
+
 	return 0;
 }
 

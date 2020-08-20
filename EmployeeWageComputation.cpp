@@ -35,12 +35,12 @@ void saveWageIntoFile(vector<int> wages, int empId, int numOfMonths, string comp
 			{
 				fileStream << "Company, Employee";
 				for(int month = 0; month < 12; month++) {
-					fileStream << ", Month " << (month + 1);
+					fileStream << ", Month_" << (month + 1);
 				}
 			}
 
 			fileStream.seekg(0, ios::beg);
-			fileStream << "\n" << companyName << ", Employee " << (empId + 1);
+			fileStream << "\n" << companyName << ", Employee" << (empId + 1);
 			for(int month = 0; month < numOfMonths; month++) {
 				fileStream << "," << wages[month];
 			}
@@ -48,7 +48,16 @@ void saveWageIntoFile(vector<int> wages, int empId, int numOfMonths, string comp
 		fileStream.close();
 }
 
-int getEmpWorkingHour(struct CompanyEmpWage companyEmpWage) {
+struct EmpWageBuilder {
+
+	int getEmpWorkingHour(CompanyEmpWage);
+	int getEmpWage(CompanyEmpWage companyEmpWage) {
+
+		return getEmpWorkingHour(companyEmpWage) *  companyEmpWage.empRatePerHrs;
+	}
+};
+
+int EmpWageBuilder::getEmpWorkingHour(CompanyEmpWage companyEmpWage) {
 
 	const int NUM_OF_WORKING_DAYS = companyEmpWage.numOfWorkingDays;
 	const int MAX_HOUR_IN_MONTH = companyEmpWage.maxHrsInMonth;
@@ -83,7 +92,7 @@ int getEmpWorkingHour(struct CompanyEmpWage companyEmpWage) {
 
 void computeEmpWage(struct CompanyEmpWage companyEmpWage, int numOfEmp, int totalMonths) {
 
-	const int EMP_RATE_PER_HOUR = companyEmpWage.empRatePerHrs;
+	struct EmpWageBuilder empWageBuilder;
 
 	for(int i = 0; i < numOfEmp; i++) {
 
@@ -91,7 +100,7 @@ void computeEmpWage(struct CompanyEmpWage companyEmpWage, int numOfEmp, int tota
 		for(int j = 0; j < totalMonths; j++) {
 
 			sleep(2);
-			int empWage = getEmpWorkingHour(companyEmpWage) * EMP_RATE_PER_HOUR;
+			int empWage = empWageBuilder.getEmpWage(companyEmpWage);
 			monthlyWage.push_back(empWage);
 			cout << "Monthly Wage For Employee:" << (j + 1) << "Is: " << empWage << endl;
 		}

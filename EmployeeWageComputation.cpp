@@ -3,37 +3,44 @@
 #include <ctime>
 #include <fstream>
 #include <unistd.h>
+#include <vector>
 using namespace std;
 
-struct Employee {
+vector<vector<int> > totalWage;
 
-	string empName;
-	int monthlyWage;
-};
-
-void saveWageIntoFile(int monthlyWage, string name) {
+void saveWageIntoFile(vector<int> wages, int empId, int numOfMonths) {
 
 	fstream fileStream;
-	fileStream.open("EmpWage.txt", ios::out | ios::app);
+	fileStream.open("EmpWage.csv", ios::out | ios::app);
+	fileStream.seekg(0, ios::end);
 
-	if(fileStream.is_open()) {
-		fileStream << monthlyWage << "," << name << endl;
+		if(fileStream.is_open())
+		{
+			if(fileStream.tellp() == 0)
+			{
+				fileStream << "Employee";
+				for(int month = 0; month < 12; month++) {
+					fileStream << ", Month " << (month + 1);
+				}
+			}
+
+			fileStream.seekg(0, ios::beg);
+			fileStream << "\n" << "Employee " << (empId + 1);
+			for(int month = 0; month < numOfMonths; month++) {
+				fileStream << "," << wages[month];
+			}
+		}
 		fileStream.close();
-	}
 }
 
-void computeEmpWage(string name) {
+int getEmpWorkingHour() {
 
-	struct Employee emp;
-	emp.empName = name;
-
-	const int EMP_RATE_PER_HOUR = 20;
 	const int NUM_OF_WORKING_DAYS = 20;
 	const int MAX_HOUR_IN_MONTH = 100;
 	const int PART_TIME = 1;
 	const int FULL_TIME = 2;
 
-	int empHrs, empWage = 0;
+	int empHrs = 0;
 	int totalEmpHrs = 0;
 	int totalWorkingDays = 0;
 
@@ -54,20 +61,32 @@ void computeEmpWage(string name) {
 			default:
 				empHrs = 0;
 		}
-		empWage = empHrs * EMP_RATE_PER_HOUR;
 		totalEmpHrs += empHrs;
 	}
+	return totalEmpHrs;
+}
 
-	emp.monthlyWage = totalEmpHrs * EMP_RATE_PER_HOUR;
-	cout << "Employee Monthly Wage Is: " << emp.monthlyWage << endl;
+void computeEmpWage(int numOfEmp, int totalMonths) {
 
-	saveWageIntoFile(emp.monthlyWage, name);
+	const int EMP_RATE_PER_HOUR = 20;
+
+	for(int i = 0; i < numOfEmp; i++) {
+
+		vector<int> monthlyWage;
+		for(int j = 0; j < totalMonths; j++) {
+
+			sleep(2);
+			int empWage = getEmpWorkingHour() * EMP_RATE_PER_HOUR;
+			monthlyWage.push_back(empWage);
+			cout << "Monthly Wage For Employee:" << (j + 1) << "Is: " << empWage << endl;
+		}
+		saveWageIntoFile(monthlyWage, i, totalMonths);
+	}
 }
 
 int main() {
 
-	computeEmpWage("Deepak");
-	sleep(2);
-	computeEmpWage("Dibya");
+	computeEmpWage(3, 3);
+	return 0;
 }
 

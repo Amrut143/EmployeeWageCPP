@@ -107,7 +107,7 @@ void computeEmpWage(CompanyEmpWage companyEmpWage, int numOfEmp, int totalMonths
 			vector<int> monthlyWage;
 			for(int month = 0; month < totalMonths; month++) {
 
-				sleep(2);
+				sleep(1.5);
 				int empWage = empWageBuilder.getEmpWage(companyEmpWage);
 				monthlyWage.push_back(empWage);
 				cout << "Monthly Wage For Employee:" << (month + 1) << "Is: " << empWage << endl;

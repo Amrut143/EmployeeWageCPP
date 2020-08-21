@@ -4,6 +4,7 @@
 #include <fstream>
 #include <unistd.h>
 #include <vector>
+#include <list>
 using namespace std;
 
 struct CompanyEmpWage {
@@ -23,26 +24,35 @@ public:
 		}
 };
 
+list<int> dailyWageList;
+
 void saveWageIntoFile(vector<int> wages, int empId, int numOfMonths, string companyName) {
 
+	list<int> :: iterator day;
 	fstream fileStream;
 	fileStream.open("EmpWage.csv", ios::out | ios::app);
-	fileStream.seekg(0, ios::end);
+	fileStream.seekp(0, ios::end);
 
 		if(fileStream.is_open())
 		{
-			if(fileStream.tellp() == 0)
+			if(fileStream.tellg() == 0)
 			{
 				fileStream << "Company, Employee";
 				for(int month = 0; month < 12; month++) {
 					fileStream << ", Month_" << (month + 1);
+					for(int day = 1; day <= 30; day++) {
+						fileStream << ", Day_" << day;
+					}
 				}
 			}
 
-			fileStream.seekg(0, ios::beg);
+			fileStream.seekp(0, ios::beg);
 			fileStream << "\n" << companyName << ", Employee" << (empId + 1);
 			for(int month = 0; month < numOfMonths; month++) {
 				fileStream << "," << wages[month];
+				for(day = dailyWageList.begin(); day != dailyWageList.end(); day++) {
+					fileStream << "," << *day;
+				}
 			}
 		}
 		fileStream.close();
@@ -51,6 +61,7 @@ void saveWageIntoFile(vector<int> wages, int empId, int numOfMonths, string comp
 struct EmpWageBuilder {
 
 	vector<CompanyEmpWage> companyWage;
+	//vector<int> dailyWageList;
 	int getEmpWorkingHour(CompanyEmpWage);
 	int getEmpWage(CompanyEmpWage company) {
 
@@ -91,6 +102,8 @@ int EmpWageBuilder::getEmpWorkingHour(CompanyEmpWage companyEmpWage) {
 			default:
 				empHrs = 0;
 		}
+		int dailyWage = empHrs * companyEmpWage.empRatePerHrs;
+		dailyWageList.push_back(dailyWage);
 		totalEmpHrs += empHrs;
 	}
 	return totalEmpHrs;

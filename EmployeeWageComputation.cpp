@@ -50,10 +50,16 @@ void saveWageIntoFile(vector<int> wages, int empId, int numOfMonths, string comp
 
 struct EmpWageBuilder {
 
+	vector<CompanyEmpWage> companyWage;
 	int getEmpWorkingHour(CompanyEmpWage);
-	int getEmpWage(CompanyEmpWage companyEmpWage) {
+	int getEmpWage(CompanyEmpWage company) {
 
-		return getEmpWorkingHour(companyEmpWage) *  companyEmpWage.empRatePerHrs;
+		return getEmpWorkingHour(company) *  company.empRatePerHrs;
+	}
+
+	void addCompany(CompanyEmpWage companyEmpWage) {
+
+		companyWage.push_back(companyEmpWage);
 	}
 };
 
@@ -90,31 +96,35 @@ int EmpWageBuilder::getEmpWorkingHour(CompanyEmpWage companyEmpWage) {
 	return totalEmpHrs;
 }
 
-void computeEmpWage(struct CompanyEmpWage companyEmpWage, int numOfEmp, int totalMonths) {
+void computeEmpWage(CompanyEmpWage companyEmpWage, int numOfEmp, int totalMonths) {
 
 	struct EmpWageBuilder empWageBuilder;
+	int numOfCompany = 2;
 
-	for(int i = 0; i < numOfEmp; i++) {
 
-		vector<int> monthlyWage;
-		for(int j = 0; j < totalMonths; j++) {
+		for(int employee = 0; employee < numOfEmp; employee++) {
 
-			sleep(2);
-			int empWage = empWageBuilder.getEmpWage(companyEmpWage);
-			monthlyWage.push_back(empWage);
-			cout << "Monthly Wage For Employee:" << (j + 1) << "Is: " << empWage << endl;
+			vector<int> monthlyWage;
+			for(int month = 0; month < totalMonths; month++) {
+
+				sleep(2);
+				int empWage = empWageBuilder.getEmpWage(companyEmpWage);
+				monthlyWage.push_back(empWage);
+				cout << "Monthly Wage For Employee:" << (month + 1) << "Is: " << empWage << endl;
+			}
+			saveWageIntoFile(monthlyWage, employee, totalMonths, companyEmpWage.companyName);
 		}
-		saveWageIntoFile(monthlyWage, i, totalMonths, companyEmpWage.companyName);
-	}
+		empWageBuilder.addCompany(companyEmpWage);
 }
 
 int main() {
 
-	struct CompanyEmpWage companyEmpWage;
-	companyEmpWage.setCompanyDetails("Dmart", 20, 100, 20);
-	computeEmpWage(companyEmpWage, 3, 3);
-	companyEmpWage.setCompanyDetails("Relaince", 25, 105, 40);
-	computeEmpWage(companyEmpWage, 2, 2);
+	struct CompanyEmpWage companyEmpWage[2];
+
+	companyEmpWage[0].setCompanyDetails("Dmart", 20, 100, 20);
+	companyEmpWage[1].setCompanyDetails("Relaince", 25, 105, 40);
+	computeEmpWage(companyEmpWage[0], 2, 2);
+	computeEmpWage(companyEmpWage[1], 2, 3);
 
 	return 0;
 }

@@ -9,6 +9,7 @@ using namespace std;
 struct CompanyEmpWage {
 
 	string companyName;
+	string employeeName;
 	int numOfWorkingDays;
 	int maxHrsInMonth;
 	int empRatePerHrs;
@@ -16,9 +17,10 @@ struct CompanyEmpWage {
 	int totalMonths;
 
 	public:
-		void setCompanyDetails(string companyName, int numOfWorkingDays, int maxHrsInMonth, int empRatePerHrs, int numOfEmployees, int totalMonths) {
+		void setCompanyDetails(string companyName, string employeeName, int numOfWorkingDays, int maxHrsInMonth, int empRatePerHrs, int numOfEmployees, int totalMonths) {
 
 			this -> companyName = companyName;
+			this -> employeeName = employeeName;
 			this -> numOfWorkingDays = numOfWorkingDays;
 			this -> maxHrsInMonth = maxHrsInMonth;
 			this -> empRatePerHrs = empRatePerHrs;
@@ -27,7 +29,7 @@ struct CompanyEmpWage {
 		}
 };
 
-void saveWageIntoFile(vector<int> wages, int empName, int numOfMonths, string companyName, int wagePerHr) {
+void saveWageIntoFile(vector<int> wages, string empName, int numOfMonths, string companyName, int wagePerHr) {
 
 	fstream fileStream;
 	fileStream.open("EmpWage.csv", ios::out | ios::app);
@@ -37,16 +39,19 @@ void saveWageIntoFile(vector<int> wages, int empName, int numOfMonths, string co
 
 		if(fileStream.tellp() == 0) {
 
-			fileStream << "Company,Employee,Day,DailyWage,WagePerHour,Month";
+			fileStream << "Company,Employee,Day,DailyWage,WagePerHour,Month,TotalWage";
 		}
 
 		fileStream.seekg(0, ios::beg);
-		for(int day = 0; day < wages.size(); day++) {
+		for(int month = 0; month < numOfMonths; month++) {
+			for(int day = 0; day < wages.size(); day++) {
 
-			fileStream << "\n" << companyName << ", Emp_" << (empName + 1) << ", " << (day + 1) << ", " << wages[day] << ", " << wagePerHr << ", " << (numOfMonths + 1);
+				wages[month] += wages[day];
+				fileStream << "\n" << companyName << ", " << empName << ", " << (day + 1) << ", " << wages[day] << ", " << wagePerHr << ", " << (month + 1) << ", " << wages[month];
+			}
+			wages[month] = 0;
 		}
 	}
-
 	fileStream.close();
 }
 
@@ -61,10 +66,10 @@ struct EmpWageBuilder {
 		return getWorkingHour(company) *  company.empRatePerHrs;
 	}
 
-	void addCompany(string companyName, int numOfWorkingDays, int maxHrsInMonth, int empRatePerHrs, int numOfEmployees, int totalMonths) {
+	void addCompany(string companyName, string employeeName, int numOfWorkingDays, int maxHrsInMonth, int empRatePerHrs, int numOfEmployees, int totalMonths) {
 
 		CompanyEmpWage companyEmpWage;
-		companyEmpWage.setCompanyDetails(companyName, numOfWorkingDays, maxHrsInMonth, empRatePerHrs, numOfEmployees, totalMonths);
+		companyEmpWage.setCompanyDetails(companyName, employeeName, numOfWorkingDays, maxHrsInMonth, empRatePerHrs, numOfEmployees, totalMonths);
 		companyWage.push_back(companyEmpWage);
 	}
 
@@ -88,6 +93,18 @@ struct EmpWageBuilder {
 					}
 				}
 				cout << "\n\nTotal Wage of company " << companyName << " Is: " << totalWage << endl;
+			}
+		}
+	}
+
+	void getEmpBasedOnWagePerHrs(int wagePerHour) {
+
+		vector<CompanyEmpWage>::iterator company;
+
+		for(company = companyWage.begin(); company < companyWage.end(); company++) {
+			if((*company).empRatePerHrs == wagePerHour) {
+
+				cout << "Name Of Employee is: " << (*company).employeeName << ", Whose Wage is: "  << (*company).empRatePerHrs << endl;
 			}
 		}
 	}
@@ -167,7 +184,7 @@ void computeEmpWage(struct EmpWageBuilder empWageBuilder) {
 				monthCount++;
 				totalWage = 0;
 
-				saveWageIntoFile(dailyWage, employee, month, (*company).companyName, (*company).empRatePerHrs);
+				saveWageIntoFile(dailyWage, (*company).employeeName, month, (*company).companyName, (*company).empRatePerHrs);
 			}
 		}
 		cout << endl;
@@ -218,11 +235,12 @@ int main() {
 
 	struct EmpWageBuilder empWageBuilder;
 
-	empWageBuilder.addCompany("Dmart", 20, 100, 20, 2, 2);
-	empWageBuilder.addCompany("Reliance", 25, 105, 50, 2, 2);
+	empWageBuilder.addCompany("Dmart", "Emp_1", 20, 100, 20, 2, 2);
+	empWageBuilder.addCompany("Reliance", "Emp_2", 25, 105, 50, 2, 2);
 	computeEmpWage(empWageBuilder);
 
 	empWageBuilder.getTotalWageBasedOnCompany("Reliance");
+	empWageBuilder.getEmpBasedOnWagePerHrs(50);
 
 	return 0;
 }

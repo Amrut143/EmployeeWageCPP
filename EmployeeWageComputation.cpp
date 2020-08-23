@@ -4,30 +4,28 @@
 #include <fstream>
 #include <unistd.h>
 #include <vector>
-#include <list>
 using namespace std;
 
-vector<int> dailyWage;
 struct CompanyEmpWage {
 
 	string companyName;
+	string employeeName;
 	int numOfWorkingDays;
 	int maxHrsInMonth;
 	int empRatePerHrs;
 	int numOfEmployees;
 	int totalMonths;
 
-public:
+	public:
 		void setCompanyDetails(string companyName, int numOfWorkingDays, int maxHrsInMonth, int empRatePerHrs, int numOfEmployees, int totalMonths) {
 
-				this -> companyName = companyName;
-				this -> numOfWorkingDays = numOfWorkingDays;
-				this -> maxHrsInMonth = maxHrsInMonth;
-				this -> empRatePerHrs = empRatePerHrs;
-				this -> numOfEmployees = numOfEmployees;
-				this -> totalMonths = totalMonths;
+			this -> companyName = companyName;
+			this -> numOfWorkingDays = numOfWorkingDays;
+			this -> maxHrsInMonth = maxHrsInMonth;
+			this -> empRatePerHrs = empRatePerHrs;
+			this -> numOfEmployees = numOfEmployees;
+			this -> totalMonths = totalMonths;
 		}
-
 };
 
 void saveWageIntoFile(vector<int> wages, int empName, int numOfMonths, string companyName, int wagePerHr) {
@@ -36,18 +34,21 @@ void saveWageIntoFile(vector<int> wages, int empName, int numOfMonths, string co
 	fileStream.open("EmpWage.csv", ios::out | ios::app);
 	fileStream.seekg(0, ios::end);
 
-		if(fileStream.is_open())
-		{
-			if(fileStream.tellp() == 0)
-			{
-				fileStream << "Company,Employee,Day,DailyWage,WagePerHour,Month";
-			}
-			fileStream.seekg(0, ios::beg);
-			for(int day = 0; day < wages.size(); day++) {
-				fileStream << "\n" << companyName << ", Emp_" << (empName + 1) << ", " << (day + 1) << ", " << wages[day] << ", " << wagePerHr << ", " << (numOfMonths + 1);
-			}
+	if(fileStream.is_open()) {
+
+		if(fileStream.tellp() == 0) {
+
+			fileStream << "Company,Employee,Day,DailyWage,WagePerHour,Month";
 		}
-		fileStream.close();
+
+		fileStream.seekg(0, ios::beg);
+		for(int day = 0; day < wages.size(); day++) {
+
+			fileStream << "\n" << companyName << ", Emp_" << (empName + 1) << ", " << (day + 1) << ", " << wages[day] << ", " << wagePerHr << ", " << (numOfMonths + 1);
+		}
+	}
+
+	fileStream.close();
 }
 
 struct EmpWageBuilder {
@@ -56,6 +57,11 @@ struct EmpWageBuilder {
 
 	int getWorkingHour(CompanyEmpWage);
 
+	int getEmpWage(CompanyEmpWage company) {
+
+		return getWorkingHour(company) *  company.empRatePerHrs;
+	}
+
 	void addCompany(string companyName, int numOfWorkingDays, int maxHrsInMonth, int empRatePerHrs, int numOfEmployees, int totalMonths) {
 
 		CompanyEmpWage companyEmpWage;
@@ -63,32 +69,23 @@ struct EmpWageBuilder {
 		companyWage.push_back(companyEmpWage);
 	}
 
-	void searchTotalWage(string companyName) {
+	void getTotalWageBasedOnCompany(string companyName) {
 
-		vector<int> monthlyWage;
+		vector<CompanyEmpWage>::iterator company;
 		int totalWage = 0;
 
-		if(companyWage.size() != 0)
-		{
-			vector<CompanyEmpWage>::iterator itr;
+		for(company = companyWage.begin(); company < companyWage.end(); company++) {
 
-			for(itr = companyWage.begin(); itr < companyWage.end(); itr++) {
+			if((*company).companyName == companyName) {
 
-				if((*itr).companyName == companyName)
-				{
-					for(int employee = 0; employee < (*itr).numOfEmployees; employee++) {
+				for(int employee = 0; employee < (*company).numOfEmployees; employee++) {
 
-						for(int month = 0; month < (*itr).totalMonths; month++) {
+					for(int month = 0; month < (*company).totalMonths; month++) {
 
-							for(int day = 0; day < (*itr).numOfWorkingDays; day++) {
-
-								totalWage += getWorkingHour(*itr) * (*itr).empRatePerHrs;
-							}
-							monthlyWage.push_back(totalWage);
-							cout << "\nCompanyName: " << companyName << "\nEmployeeName: " << "Employee_" << (employee +1) << "\nMonth: " << (month + 1) << "\nMonthlyWage: " << monthlyWage[month] << endl;
-						}
+							totalWage += getWorkingHour(*company) * (*company).empRatePerHrs;
 					}
 				}
+				cout << "\n\nTotal Wage of company " << companyName << " Is: " << totalWage << endl;
 			}
 		}
 	}
@@ -122,28 +119,81 @@ int EmpWageBuilder::getWorkingHour(CompanyEmpWage companyEmpWage) {
 			default:
 				empHrs = 0;
 		}
-		int wage = empHrs * companyEmpWage.empRatePerHrs;
-		dailyWage.push_back(wage);
-		totalEmpHrs += empHrs;
 	}
-	return totalEmpHrs;
+	return empHrs;
 }
+
+void sortByWages(int *, int);
+void displaySortedData(int *, int);
 
 void computeEmpWage(struct EmpWageBuilder empWageBuilder) {
 
 	vector <CompanyEmpWage> :: iterator company;
+	CompanyEmpWage companyEmpWage;
+	int totalWage = 0;
+	vector<int> dailyWage;
 
 	for(company = empWageBuilder.companyWage.begin(); company != empWageBuilder.companyWage.end(); company++) {
 
 		int numOfEmployee = (*company).numOfEmployees;
 		int totalMonths = (*company).totalMonths;
+		int month = (*company).totalMonths * (*company).numOfEmployees;
+		int monthCount = 0;
+		int monthArray[month];
 
 		for(int employee = 0; employee < numOfEmployee; employee++) {
 
 			for(int month = 0; month < totalMonths; month++) {
 
-				sleep(1.5);
+				for(int day = 0; day < (*company).numOfWorkingDays; day++) {
+
+					int wage = empWageBuilder.getEmpWage(*company);
+					dailyWage.push_back(wage);
+
+					totalWage += wage;
+					sleep(1.5);
+				}
+				cout << "**********************" << endl;
+				cout << "Monthly Wage For Employee:" << (month + 1) << " Is: " << totalWage << endl;
+
+				monthArray[monthCount] = totalWage;
+				monthCount++;
+				totalWage = 0;
+
 				saveWageIntoFile(dailyWage, employee, month, (*company).companyName, (*company).empRatePerHrs);
+			}
+		}
+		cout << endl;
+		cout << "\n\nBefore sorting the monthly wages are " << endl;
+
+		displaySortedData(monthArray, month);
+		sortByWages(monthArray, month);
+
+		cout << "\n\nAfter sorting the monthly wages are" << endl;
+		displaySortedData(monthArray, month);
+	}
+}
+
+void displaySortedData(int *arrayElement, int size) {
+
+	for(int count = 0; count < size; count++) {
+
+		cout << arrayElement[count] << " ";
+	}
+}
+
+void sortByWages(int *wage, int size) {
+
+	int tempWage;
+
+	for(int i = 0; i < size; i++ ) {
+
+		for(int j = i + 1; j < size; j++) {
+
+			if(wage[i] > wage[j]) {
+				tempWage = wage[i];
+				wage[i] = wage[j];
+				wage[j] = tempWage;
 			}
 		}
 	}
@@ -155,10 +205,9 @@ int main() {
 
 	empWageBuilder.addCompany("Dmart", 20, 100, 20, 3, 2);
 	empWageBuilder.addCompany("Reliance", 25, 105, 50, 2, 2);
-
 	computeEmpWage(empWageBuilder);
 
-	empWageBuilder.searchTotalWage("Reliance");
+	empWageBuilder.getTotalWageBasedOnCompany("Reliance");
 
 	return 0;
 }

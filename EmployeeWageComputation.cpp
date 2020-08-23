@@ -9,7 +9,6 @@ using namespace std;
 struct CompanyEmpWage {
 
 	string companyName;
-	string employeeName;
 	int numOfWorkingDays;
 	int maxHrsInMonth;
 	int empRatePerHrs;
@@ -82,7 +81,10 @@ struct EmpWageBuilder {
 
 					for(int month = 0; month < (*company).totalMonths; month++) {
 
+						for(int day = 0; day < (*company).numOfWorkingDays; day++) {
+
 							totalWage += getWorkingHour(*company) * (*company).empRatePerHrs;
+						}
 					}
 				}
 				cout << "\n\nTotal Wage of company " << companyName << " Is: " << totalWage << endl;
@@ -140,6 +142,9 @@ void computeEmpWage(struct EmpWageBuilder empWageBuilder) {
 		int month = (*company).totalMonths * (*company).numOfEmployees;
 		int monthCount = 0;
 		int monthArray[month];
+		int days = totalMonths * numOfEmployee * (*company).numOfWorkingDays;
+		int dayCount = 0;
+		int dayArray[days];
 
 		for(int employee = 0; employee < numOfEmployee; employee++) {
 
@@ -149,6 +154,8 @@ void computeEmpWage(struct EmpWageBuilder empWageBuilder) {
 
 					int wage = empWageBuilder.getEmpWage(*company);
 					dailyWage.push_back(wage);
+					dayArray[dayCount] = wage;
+					dayCount++;
 
 					totalWage += wage;
 					sleep(1.5);
@@ -171,6 +178,13 @@ void computeEmpWage(struct EmpWageBuilder empWageBuilder) {
 
 		cout << "\n\nAfter sorting the monthly wages are" << endl;
 		displaySortedData(monthArray, month);
+
+		cout << "\n\nBefore sorting daily wage" << endl;
+		displaySortedData(dayArray, month);
+
+		sortByWages(dayArray, month);
+		cout << "\n\nAfter sorting daily wage" << endl;
+		displaySortedData(dayArray, month);
 	}
 }
 
@@ -179,6 +193,7 @@ void displaySortedData(int *arrayElement, int size) {
 	for(int count = 0; count < size; count++) {
 
 		cout << arrayElement[count] << " ";
+		cout << endl;
 	}
 }
 
@@ -203,7 +218,7 @@ int main() {
 
 	struct EmpWageBuilder empWageBuilder;
 
-	empWageBuilder.addCompany("Dmart", 20, 100, 20, 3, 2);
+	empWageBuilder.addCompany("Dmart", 20, 100, 20, 2, 2);
 	empWageBuilder.addCompany("Reliance", 25, 105, 50, 2, 2);
 	computeEmpWage(empWageBuilder);
 
